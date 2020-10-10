@@ -1,0 +1,6 @@
+# IDES
+.idea/
+.vscode/
+
+# Downloaded Libraries
+node_modules/
