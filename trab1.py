@@ -5,22 +5,45 @@ import threading
 import time
 import sys
 
+
+
+#
+ #	~ Trabalho Prático 1: Busca ~
+ #
+ #	Grupo:
+ #		Marcelo (Nº USP )
+ #		Matheus Carvalho Raimundo (Nº USP 10369014)
+ #		Michelle (Nº USP )
+ #
+ #	Inteligência Artificial: SCC-0230 2020.2
+ #
+ #	 _______ _______ _______
+ #	|   |   |               \
+ #	|   |   |      \    |___|
+ #	|   |    \      |   |
+ #	|_______ _______|___|
+ #
+#
+
+
+
 CHAR_PATH = "@"
 
 
 
 def introducao():
-	print()
+	### Essa função introduz o programa ao usuário. ###
 	print("Bem-vinde ao nosso trabalho!")
 	print("Funciona da seguinte maneira:")
 	print("- Você vai passar como entrada um labirinto, da maneira como proposto na especificação do trabalho.")
-	print("- Em seguida todos os algoritmos irão executar, e os resultados de cada algoritmo serão impressos.")
-	print("Atenção: o programa utiliza múltiplas threads para uma execução mais rápida.")
+	print("- Em seguida todos os algoritmos irão executar.")
+	print("- Ao final da execução de cada algoritmo, será retornado os resultados para você. Se um caminho foi encontrado, os pontos do caminho e uma representação gráfica estarão disponíveis.")
+	print("Atenção: o programa utiliza múltiplas linhas de execução (threads) para maior desempenho.")
 	print()
 
 def ler_entrada():
 	### Essa função realiza a leitura dos dados de entrada. ###
-	dimm = input("Entre com as dimenções do labirinto (valores inteiros >= 1). > ").strip().split() # Obtem uma linha da entrada.
+	dimm = input("Entre com as dimenções do labirinto (valores inteiros >= 1). > ").strip().split() # Obtém uma linha da entrada.
 	if len(dimm) != 2: # Verifica se passou 2 inteiros.
 		print()
 		print("ERRO: você deve passar dois inteiros para o programa para a dimensão do labirinto em uma única linha.")
@@ -38,72 +61,94 @@ def ler_entrada():
 	return lab
 
 def imprimir_resultados(algo, labirinto, path, time):
+	### Essa função imprime os resultados de um algoritmo executado na tela. ###
 	global mutex
-	for point in path:
-		labirinto[point[0], point[1]] = CHAR_PATH
-	mutex.acquire()
-	print("== %s ==" % (algo))
-	print("\tTempo de execução: %.5f segundos" % (time))
-	if len(path) > 1:
-		for line in labirinto:
-			print("\t", end = "")
-			for item in line:
-				print(item, end = "")
-			print()
+	for point in path: # Para cada ponto no caminho solução encontrado...
+		labirinto[point[0], point[1]] = CHAR_PATH # Colocar como "@" no labirinto (para representação visual).
+	mutex.acquire() # Adquirir mutex (evita problemas devido ao uso de multithreading).
+	print("== %s ==" % (algo)) # Imprimir nome do algoritmo.
+	print("\tTempo de execução: %.5f segundos" % (time)) # Imprimir tempo de execução.
+	if len(path) > 1: # Se houver um caminho encontrado...
+		print("\tCaminho: ", end="")
+		for point in path:
+			print("(%d, %d) " % (point[0], point[1]), end="") # Imprimir os pontos desse caminho.
+		print()
+		if labirinto.shape[0] > 30 or labirinto.shape[1] > 30:
+			print("\t(Labirinto grande demais para exibir representação visual.)")
+		else:
+			for line in labirinto: # Imprimir representação visual desse caminho.
+				print("\t", end = "")
+				for item in line:
+					print(item, end = "")
+				print()
 	else:
 		print("\tNenhum caminho encontrado.")
 	print()
 	mutex.release()
 
-
-def algo_dfs_recursao(labirinto, point):
-	if labirinto[point[0], point[1]] == "$":
-		return [point]
-	is_point_valid = lambda x, y : x >= 0 and x < labirinto.shape[0] \
+def is_point_valid(labirinto, x, y):
+	### Essa função apenas retorna TRUE se um ponto é válido para percorrer em um dado labirinto, e FALSE caso contrário. ###
+	return x >= 0 and x < labirinto.shape[0] \
 		and y >= 0 and y < labirinto.shape[1] \
 		and (labirinto[x, y] == "*" or labirinto[x, y] == "$")
-	if is_point_valid(point[0] + 1, point[1]):
-		labirinto[point[0], point[1]] = "!"
-		ret = algo_dfs_recursao(labirinto, [point[0] + 1, point[1]]) # Descer.
-		labirinto[point[0], point[1]] = "*"
-		if ret is not None:
-			return [point] + ret
-	if is_point_valid(point[0], point[1] + 1):
-		labirinto[point[0], point[1]] = "!"
-		ret = algo_dfs_recursao(labirinto, [point[0], point[1] + 1]) # Direita.
-		labirinto[point[0], point[1]] = "*"
-		if ret is not None:
-			return [point] + ret
-	if is_point_valid(point[0] - 1, point[1]):
-		labirinto[point[0], point[1]] = "!"
-		ret = algo_dfs_recursao(labirinto, [point[0] - 1, point[1]]) # Subir.
-		labirinto[point[0], point[1]] = "*"
-		if ret is not None:
-			return [point] + ret
-	if is_point_valid(point[0], point[1] - 1):
-		labirinto[point[0], point[1]] = "!"
-		ret = algo_dfs_recursao(labirinto, [point[0], point[1] - 1]) # Esquerda.
-		labirinto[point[0], point[1]] = "*"
-		if ret is not None:
-			return [point] + ret
-	return None
 
 def algo_dfs(labirinto):
 	path = [ ]
+	start_point = np.argwhere(labirinto == "#")[0].tolist()
 	start_time = time.time()
 	# Inicio do algoritmo.
-	start_point = np.argwhere(labirinto == "#")[0].tolist()
-	ret = algo_dfs_recursao(labirinto, start_point)
-	if ret is not None:
-		path = ret
-	# Fim do algoritmo.
+	stack = [ start_point ] # Aloca pilha.
+	antecessor = np.full(labirinto.shape, None, dtype=np.object) # Vetor de antecessores.
+	while len(stack) > 0: # Enquanto existirem pontos a serem percorridos na pilha...
+		point = stack.pop() # Retira do fim da pilha (então faz uma busca DFS).
+		if labirinto[point[0], point[1]] == "$": # Solução encontrada! Gerar vetor com a solução e encerrar algoritmo.
+			while point[0] != start_point[0] or point[1] != start_point[1]:
+				path.insert(0, point)
+				point = antecessor[point[0], point[1]]
+			path.insert(0, start_point)
+			break
+		if is_point_valid(labirinto, point[0] - 1, point[1]) and antecessor[point[0] - 1, point[1]] is None: # Subir.
+			stack.append([point[0] - 1, point[1]])
+			antecessor[point[0] - 1, point[1]] = point
+		if is_point_valid(labirinto, point[0] + 1, point[1]) and antecessor[point[0] + 1, point[1]] is None: # Descer.
+			stack.append([point[0] + 1, point[1]])
+			antecessor[point[0] + 1, point[1]] = point
+		if is_point_valid(labirinto, point[0], point[1] - 1) and antecessor[point[0], point[1] - 1] is None: # Esquerda.
+			stack.append([point[0], point[1] - 1])
+			antecessor[point[0], point[1] - 1] = point
+		if is_point_valid(labirinto, point[0], point[1] + 1) and antecessor[point[0], point[1] + 1] is None: # Direita.
+			stack.append([point[0], point[1] + 1])
+			antecessor[point[0], point[1] + 1] = point
 	end_time = time.time()
 	imprimir_resultados("Algoritmo de Busca em Profundidade", labirinto, path, end_time - start_time)
 
 def algo_bfs(labirinto):
 	path = [ ]
+	start_point = np.argwhere(labirinto == "#")[0].tolist()
 	start_time = time.time()
 	# Inicio do algoritmo.
+	queue = [ start_point ] # Aloca fila.
+	antecessor = np.full(labirinto.shape, None, dtype=np.object) # Vetor de antecessores.
+	while len(queue) > 0: # Enquanto existirem pontos a serem percorridos na fila...
+		point = queue.pop(0)  # Retira do começo da fila (então faz uma busca BFS).
+		if labirinto[point[0], point[1]] == "$": # Solução encontrada! Gerar vetor com a solução e encerrar algoritmo.
+			while point[0] != start_point[0] or point[1] != start_point[1]:
+				path.insert(0, point)
+				point = antecessor[point[0], point[1]]
+			path.insert(0, start_point)
+			break
+		if is_point_valid(labirinto, point[0] - 1, point[1]) and antecessor[point[0] - 1, point[1]] is None: # Subir.
+			queue.append([point[0] - 1, point[1]])
+			antecessor[point[0] - 1, point[1]] = point
+		if is_point_valid(labirinto, point[0] + 1, point[1]) and antecessor[point[0] + 1, point[1]] is None: # Descer.
+			queue.append([point[0] + 1, point[1]])
+			antecessor[point[0] + 1, point[1]] = point
+		if is_point_valid(labirinto, point[0], point[1] - 1) and antecessor[point[0], point[1] - 1] is None: # Esquerda.
+			queue.append([point[0], point[1] - 1])
+			antecessor[point[0], point[1] - 1] = point
+		if is_point_valid(labirinto, point[0], point[1] + 1) and antecessor[point[0], point[1] + 1] is None: # Direita.
+			queue.append([point[0], point[1] + 1])
+			antecessor[point[0], point[1] + 1] = point
 	# Fim do algoritmo.
 	end_time = time.time()
 	imprimir_resultados("Algoritmo de Busca em Largura", labirinto, path, end_time - start_time)
@@ -149,10 +194,10 @@ threads.append(threading.Thread(target=algo_hill_climbing, args=(np.copy(labirin
 print("Vamos iniciar a execução dos algoritmos. Por favor, aguarde...")
 print()
 
-for t in threads:
+for t in threads: # Iniciar threads.
 	t.start()
 
-for t in threads:
+for t in threads: # Aguardar fim das threads.
 	t.join()
 
 print("FIM.")
