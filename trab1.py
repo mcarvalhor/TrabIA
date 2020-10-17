@@ -46,7 +46,6 @@ def introducao():
 def ler_entrada():
 	### Essa função realiza a leitura dos dados de entrada. ###
 	dimm = input("Entre com as dimenções do labirinto (valores inteiros >= 1). > ").strip().split() # Obtém uma linha da entrada.
-	print(dimm)
 	if len(dimm) != 2: # Verifica se passou 2 inteiros.
 		print()
 		print("ERRO: você deve passar dois inteiros para o programa para a dimensão do labirinto em uma única linha.")
