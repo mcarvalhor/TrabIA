@@ -12,9 +12,9 @@ import sys
  #	~ Trabalho Prático 1: Busca ~
  #
  #	Grupo:
- #		Marcelo (Nº USP )
+ #		Marcelo Duchêne (Nº USP 8596351)
  #		Matheus Carvalho Raimundo (Nº USP 10369014)
- #		Michelle (Nº USP )
+ #		Michelle Wingter da Silva (Nº USP 10783243)
  #
  #	Inteligência Artificial: SCC-0230 2020.2
  #
