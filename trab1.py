@@ -1,7 +1,6 @@
 #!python3
 
 import numpy as np
-import threading
 import heapq
 import math
 import time
@@ -40,7 +39,6 @@ def introducao():
 	print("- Você vai passar como entrada um labirinto, da maneira como proposto na especificação do trabalho.")
 	print("- Em seguida todos os algoritmos irão executar.")
 	print("- Ao final da execução de cada algoritmo, será retornado os resultados para você. Se um caminho foi encontrado, os pontos do caminho e uma representação gráfica estarão disponíveis.")
-	print("Atenção: o programa utiliza múltiplas linhas de execução (threads) para maior desempenho.")
 	print()
 
 def ler_entrada():
@@ -64,10 +62,8 @@ def ler_entrada():
 
 def imprimir_resultados(algo, labirinto, path, time):
 	### Essa função imprime os resultados de um algoritmo executado na tela. ###
-	global mutex
 	for point in path: # Para cada ponto no caminho solução encontrado...
 		labirinto[point[0], point[1]] = CHAR_PATH # Colocar como "@" no labirinto (para representação visual).
-	mutex.acquire() # Adquirir mutex (evita problemas devido ao uso de multithreading).
 	print("== %s ==" % (algo)) # Imprimir nome do algoritmo.
 	print("\tTempo de execução: %.5f segundos" % (time)) # Imprimir tempo de execução.
 	if len(path) > 1: # Se houver um caminho encontrado...
@@ -86,7 +82,6 @@ def imprimir_resultados(algo, labirinto, path, time):
 	else:
 		print("\tNenhum caminho encontrado.")
 	print()
-	mutex.release()
 
 def is_point_valid(labirinto, x, y):
 	### Essa função apenas retorna TRUE se um ponto é válido para percorrer em um dado labirinto, e FALSE caso contrário. ###
@@ -210,29 +205,19 @@ def algo_hill_climbing(labirinto):
 	imprimir_resultados("Algoritmo de Busca Hill Climbing", labirinto, path, end_time - start_time)
 
 
+
 ### MAIN ###
 
 introducao() # Imprimir texto de introdução.
 labirinto = ler_entrada() # Ler o labirinto de entrada.
 
-threads = [ ] # Lista de threads (para maior desempenho).
-mutex = threading.Semaphore(1) # Mutex para impressão de resultados.
-threads.append(threading.Thread(target=algo_dfs, args=(np.copy(labirinto),))) # Busca em profundidade.
-threads.append(threading.Thread(target=algo_bfs, args=(np.copy(labirinto),))) # Busca em largura.
-threads.append(threading.Thread(target=algo_best_first_search, args=(np.copy(labirinto),))) # Busca Best-First Search.
-threads.append(threading.Thread(target=algo_a_star, args=(np.copy(labirinto),))) # Busca A*.
-threads.append(threading.Thread(target=algo_hill_climbing, args=(np.copy(labirinto),))) # Hill Climbing.
-
 print("Vamos iniciar a execução dos algoritmos. Por favor, aguarde...")
 print()
 
-for t in threads: # Iniciar threads.
-	t.start()
-
-for t in threads: # Aguardar fim das threads.
-	t.join()
-
-print("FIM.")
-print()
+algo_dfs(np.copy(labirinto)) # Busca em profundidade.
+algo_bfs(np.copy(labirinto)) # Busca em largura.
+algo_best_first_search(np.copy(labirinto)) # Busca Best-First Search.
+algo_a_star(np.copy(labirinto)) # Busca A*.
+algo_hill_climbing(np.copy(labirinto)) # Hill Climbing.
 
 
