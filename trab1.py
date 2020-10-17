@@ -190,8 +190,39 @@ def algo_best_first_search(labirinto):
 
 def algo_a_star(labirinto):
 	path = [ ]
+	start_point = np.argwhere(labirinto == "#")[0].tolist()
 	start_time = time.time()
 	# Inicio do algoritmo.
+	end_point = np.argwhere(labirinto == "$")[0].tolist()
+	priority_queue = [ ] # Aloca fila de prioridade.
+	antecessor = np.full(labirinto.shape, None, dtype=np.object) # Vetor de antecessores.
+	heapq.heappush(priority_queue, (point_heuristic_distance(start_point[0], start_point[1], end_point) + 0, start_point)) # Adiciona o ponto inicial à fila de prioridade.
+	while len(priority_queue) > 0: # Enquanto existirem pontos a serem percorridos na fila de prioridade...
+		point_priority = heapq.heappop(priority_queue) # Retira da fila de prioridades (baseando-se na distancia até o ponto destino, função h(x), somada à distância atual, função g(x)).
+		current_priority = point_priority[0] # g(x).
+		point = point_priority[1] # x.
+		if labirinto[point[0], point[1]] == "$": # Solução encontrada! Gerar vetor com a solução e encerrar algoritmo.
+			while point[0] != start_point[0] or point[1] != start_point[1]:
+				path.insert(0, point)
+				point = antecessor[point[0], point[1]][1]
+			path.insert(0, start_point)
+			break
+		if is_point_valid(labirinto, point[0] - 1, point[1]) and (antecessor[point[0] - 1, point[1]] is None or antecessor[point[0] - 1, point[1]][0] > current_priority + point_heuristic_distance(point[0] - 1, point[1], end_point)): # Subir.
+			next_priority = current_priority + point_heuristic_distance(point[0] - 1, point[1], end_point)
+			heapq.heappush(priority_queue, (next_priority, [point[0] - 1, point[1]]))
+			antecessor[point[0] - 1, point[1]] = [next_priority, point]
+		if is_point_valid(labirinto, point[0] + 1, point[1]) and (antecessor[point[0] + 1, point[1]] is None or antecessor[point[0] + 1, point[1]][0] > current_priority + point_heuristic_distance(point[0] + 1, point[1], end_point)): # Descer.
+			next_priority = current_priority + point_heuristic_distance(point[0] + 1, point[1], end_point)
+			heapq.heappush(priority_queue, (next_priority, [point[0] + 1, point[1]]))
+			antecessor[point[0] + 1, point[1]] = [next_priority, point]
+		if is_point_valid(labirinto, point[0], point[1] - 1) and (antecessor[point[0], point[1] - 1] is None or antecessor[point[0], point[1] - 1][0] > current_priority + point_heuristic_distance(point[0], point[1] - 1, end_point)): # Esquerda.
+			next_priority = current_priority + point_heuristic_distance(point[0], point[1] - 1, end_point)
+			heapq.heappush(priority_queue, (next_priority, [point[0], point[1] - 1]))
+			antecessor[point[0], point[1] - 1] = [next_priority, point]
+		if is_point_valid(labirinto, point[0], point[1] + 1) and (antecessor[point[0], point[1] + 1] is None or antecessor[point[0], point[1] + 1][0] > current_priority + point_heuristic_distance(point[0], point[1] + 1, end_point)): # Direita.
+			next_priority = current_priority + point_heuristic_distance(point[0], point[1] + 1, end_point)
+			heapq.heappush(priority_queue, (next_priority, [point[0], point[1] + 1]))
+			antecessor[point[0], point[1] + 1] = [next_priority, point]
 	# Fim do algoritmo.
 	end_time = time.time()
 	imprimir_resultados("Algoritmo de Busca A*", labirinto, path, end_time - start_time)
