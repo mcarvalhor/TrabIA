@@ -199,8 +199,8 @@ def algo_a_star(labirinto):
 	heapq.heappush(priority_queue, (point_heuristic_distance(start_point[0], start_point[1], end_point) + 0, start_point)) # Adiciona o ponto inicial à fila de prioridade.
 	while len(priority_queue) > 0: # Enquanto existirem pontos a serem percorridos na fila de prioridade...
 		point_priority = heapq.heappop(priority_queue) # Retira da fila de prioridades (baseando-se na distancia até o ponto destino, função h(x), somada à distância atual, função g(x)).
-		current_priority = point_priority[0] # g(x).
 		point = point_priority[1] # x.
+		current_priority = max(point_priority[0] - point_heuristic_distance(point[0], point[1], end_point), 0) + 1 # g(x).
 		if labirinto[point[0], point[1]] == "$": # Solução encontrada! Gerar vetor com a solução e encerrar algoritmo.
 			while point[0] != start_point[0] or point[1] != start_point[1]:
 				path.insert(0, point)
