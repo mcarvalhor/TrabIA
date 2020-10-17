@@ -243,7 +243,7 @@ def algo_hill_climbing(labirinto):
 			path.insert(0, start_point)
 			break
 		nearest_point = None
-		nearest_distance = 100000
+		nearest_distance = float("inf")
 		if is_point_valid(labirinto, point[0] - 1, point[1]) and antecessor[point[0] - 1, point[1]] is None: # Subir.
 			if nearest_distance > point_heuristic_distance(point[0] - 1, point[1], end_point):
 				nearest_point = [point[0] - 1, point[1]]
