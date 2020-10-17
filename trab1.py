@@ -46,20 +46,21 @@ def introducao():
 def ler_entrada():
 	### Essa função realiza a leitura dos dados de entrada. ###
 	dimm = input("Entre com as dimenções do labirinto (valores inteiros >= 1). > ").strip().split() # Obtém uma linha da entrada.
+	print(dimm)
 	if len(dimm) != 2: # Verifica se passou 2 inteiros.
 		print()
 		print("ERRO: você deve passar dois inteiros para o programa para a dimensão do labirinto em uma única linha.")
 		sys.exit(-1)
 	lab = np.empty([int(dimm[0]), int(dimm[1])], dtype=np.str) # Aloca array.
 	print("Agora, entre com o labirinto abaixo. >")
-	for i in range(lab.shape[0]): # Lê o labirinto.
-		line = "".join(input().split())
-		if len(line) != lab.shape[1]: # Verifica se está certo.
-			print()
-			print("ERRO: você passou uma linha cujo número de itens está errado!")
-			sys.exit(-1)
-		for j in range(lab.shape[1]): # Coloca os dados lidos da linha na array.
-			lab[i, j] = line[j]
+	current_i = 0
+	while current_i < lab.shape[0] * lab.shape[1]: # Lê o labirinto.
+		line = "".join(input().strip().split())
+		for char in line:
+			if char != "*" and char != "-" and char != "$" and char != "#":
+				continue
+			lab[int(current_i / lab.shape[1]), int(current_i % lab.shape[1])] = char
+			current_i += 1
 	return lab
 
 def imprimir_resultados(algo, labirinto, path, time):
