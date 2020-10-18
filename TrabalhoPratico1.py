@@ -105,7 +105,7 @@ def is_point_valid(labirinto, x, y):
 def point_heuristic_distance(x, y, end_point):
 	### Essa função retorna a distancia de um determinado ponto (x, y) a outro ponto de destino end_point, usada nos algoritmos de busca informada. ###
 	#return math.sqrt(math.pow(x - end_point[0], 2) + math.pow(y - end_point[1], 2)) # Distância Euclidiana
-	return math.abs(x - end_point[0]) + math.abs(y - end_point[1]) # Distância de Manhattan
+	return abs(x - end_point[0]) + abs(y - end_point[1]) # Distância de Manhattan
 
 def algo_dfs(labirinto):
 	path = [ ]
