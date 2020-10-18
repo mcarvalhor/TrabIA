@@ -28,7 +28,10 @@ import sys
 
 
 
-CHAR_PATH = "@"
+CHAR_PATH = "@" # Caractere usado para representar um caminho encontrado.
+VISUAL_POINTS_MAX = 30 # Tamanho máximo para ser considerado "grande demais" no número de pontos.
+VISUAL_ROW_MAX = 30 # Tamanho máximo para ser considerado "grande demais" no número de linhas.
+VISUAL_COL_MAX = 30 # Tamanho máximo para ser considerado "grande demais" no número de colunas.
 
 
 
@@ -66,12 +69,22 @@ def imprimir_resultados(algo, labirinto, path, time):
 		labirinto[point[0], point[1]] = CHAR_PATH # Colocar como "@" no labirinto (para representação visual).
 	print("== %s ==" % (algo)) # Imprimir nome do algoritmo.
 	print("\tTempo de execução: %.5f segundos" % (time)) # Imprimir tempo de execução.
-	if len(path) > 1: # Se houver um caminho encontrado...
-		print("\tCaminho: ", end="")
+	if len(path) > VISUAL_POINTS_MAX: # Se houver um caminho encontrado mas é muito grande...
+		print("\tCaminho: encontrado, mas longo demais para exibir os %d pontos aqui." % (len(path)))
+		if labirinto.shape[0] > VISUAL_ROW_MAX or labirinto.shape[1] > VISUAL_COL_MAX:
+			print("\t(Labirinto grande demais para exibir representação visual.)")
+		else:
+			for line in labirinto: # Imprimir representação visual desse caminho.
+				print("\t", end = "")
+				for item in line:
+					print(item, end = "")
+				print()
+	elif len(path) > 1: # Se houver um caminho encontrado...
+		print("\tCaminho (%d): " % (len(path)), end="")
 		for point in path:
 			print("(%d, %d) " % (point[0], point[1]), end="") # Imprimir os pontos desse caminho.
 		print()
-		if labirinto.shape[0] > 30 or labirinto.shape[1] > 30:
+		if labirinto.shape[0] > VISUAL_ROW_MAX or labirinto.shape[1] > VISUAL_COL_MAX:
 			print("\t(Labirinto grande demais para exibir representação visual.)")
 		else:
 			for line in labirinto: # Imprimir representação visual desse caminho.
